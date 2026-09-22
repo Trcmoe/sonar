@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import xyz.jonesdev.sonar.api.Sonar;
 import xyz.jonesdev.sonar.api.antibot.SonarUser;
 import xyz.jonesdev.sonar.api.antibot.protocol.ProtocolVersion;
+import xyz.jonesdev.sonar.api.config.SimpleYamlConfig;
 import xyz.jonesdev.sonar.api.database.model.VerifiedPlayer;
 import xyz.jonesdev.sonar.api.event.impl.UserBlacklistedEvent;
 import xyz.jonesdev.sonar.api.event.impl.UserVerifyFailedEvent;
@@ -36,6 +37,7 @@ import xyz.jonesdev.sonar.common.statistics.GlobalSonarStatistics;
 import xyz.jonesdev.sonar.common.util.ProtocolUtil;
 import xyz.jonesdev.sonar.common.util.exception.QuietDecoderException;
 
+import java.util.Locale;
 import java.util.Random;
 
 @RequiredArgsConstructor
@@ -58,15 +60,23 @@ public abstract class VerificationHandler implements SonarPacketListener {
     // This feature was introduced by Mojang in Minecraft version 1.20.5.
     if (user.getProtocolVersion().greaterThanOrEquals(ProtocolVersion.MINECRAFT_1_20_5)
       && Sonar.get0().getConfig().getGeneralConfig().getBoolean("verification.transfer.enabled")) {
-      // Use the original handshake hostname if configured and available (for forced hosts / proxy setups),
-      // otherwise fall back to the configured destination host.
+      // Use the original handshake endpoint if configured and available (for forced hosts / proxy setups),
+      // otherwise fall back to the configured endpoint.
       final String hostname = user.getHostname();
-      final boolean useHandshake = Sonar.get0().getConfig().getGeneralConfig()
-        .getBoolean("verification.transfer.use-handshake-hostname");
-      final String destinationHost = useHandshake && hostname != null && !hostname.isEmpty()
-        ? hostname
-        : Sonar.get0().getConfig().getGeneralConfig().getString("verification.transfer.destination-host");
-      final int destinationPort = Sonar.get0().getConfig().getGeneralConfig().getInt("verification.transfer.destination-port");
+      final int handshakePort = user.getHandshakePort();
+      final SimpleYamlConfig config = Sonar.get0().getConfig().getGeneralConfig();
+      final boolean useHandshake = config.getBoolean("verification.transfer.use-handshake-hostname");
+      final String fallbackHost = config.contains("verification.transfer.fallback-host")
+        ? config.getString("verification.transfer.fallback-host")
+        : config.getString("verification.transfer.destination-host");
+      final int fallbackPort = config.contains("verification.transfer.fallback-port")
+        ? config.getInt("verification.transfer.fallback-port")
+        : config.getInt("verification.transfer.destination-port");
+      final String normalizedHostname = hostname == null ? "" : normalizeHostname(hostname);
+      final boolean useHandshakeEndpoint = useHandshake && !normalizedHostname.isEmpty()
+        && handshakePort > 0 && handshakePort <= 65535;
+      final String destinationHost = useHandshakeEndpoint ? normalizedHostname : fallbackHost;
+      final int destinationPort = useHandshakeEndpoint ? handshakePort : fallbackPort;
       final TransferPacket transferPacket = new TransferPacket(destinationHost, destinationPort);
       // Send the transfer packet to the player (and close the channel if on Java Edition)
       if (user.isGeyser()) {
@@ -146,5 +156,10 @@ public abstract class VerificationHandler implements SonarPacketListener {
     if (!state) {
       fail(failReason);
     }
+  }
+
+  private static @NotNull String normalizeHostname(final @NotNull String hostname) {
+    final String normalized = hostname.trim().toLowerCase(Locale.ROOT);
+    return normalized.endsWith(".") ? normalized.substring(0, normalized.length() - 1) : normalized;
   }
 }
