@@ -157,17 +157,15 @@ verification:
     # Gdy używasz proxy z forced hosts, Sonar może użyć nazwy hosta, z którą
     # gracz pierwotnie się łączył (z pakietu handshake) jako celu transferu.
     # Wyłącz tę opcję, jeśli twoje forced hosts są tylko do wewnętrznego routingu
-    # i chcesz, aby wszyscy gracze byli przenoszeni na skonfigurowany destination-host.
+    # i chcesz, aby wszyscy gracze byli przenoszeni na skonfigurowany fallback-host.
     use-handshake-hostname: false
     # Na który serwer Sonar powinien przenieść gracza po pomyślnym przejściu weryfikacji?
     # Wprowadź adres IP serwera, który jest używany przez graczy do normalnego łączenia się z serwerem.
     # Na przykład, możesz wpisać "mc.hypixel.net" lub bezpośredni adres IP, taki jak "1.1.1.1".
-    destination-host: "play.my-server.com"
+    fallback-host: "play.my-server.com"
     # Jaki port powinien używać Sonar podczas przenoszenia gracza do serwera początkowego?
     # Jeśli serwer nie potrzebuje portu do połączenia, można pozostawić 25565.
-    # Jeśli używasz forced hosts (use-handshake-hostname: true), ustaw to na port,
-    # na którym nasłuchuje proxy (port "bind" w konfiguracji twojego proxy).
-    destination-port: 25565
+    fallback-port: 25565
 
   # Tryb gry gracza (gamemode) podczas weryfikacji
   # Dostępne rodzaje: SURVIVAL, CREATIVE, ADVENTURE
