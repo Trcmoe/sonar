@@ -60,7 +60,7 @@ final class BungeeInboundHandler extends InboundHandlerAdapter {
           if (handshake.getRequestedProtocol() == STATUS) {
             ctx.pipeline().remove(this);
           } else {
-            handleHandshake(ctx, handshake.getHost(), handshake.getProtocolVersion());
+            handleHandshake(ctx, handshake.getHost(), handshake.getPort(), handshake.getProtocolVersion());
           }
         } else if (wrappedPacket instanceof LoginRequest) {
           // Make sure to use the potentially modified, real IP

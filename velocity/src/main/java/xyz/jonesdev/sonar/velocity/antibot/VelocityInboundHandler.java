@@ -37,7 +37,8 @@ final class VelocityInboundHandler extends InboundHandlerAdapter {
       if (handshake.getNextStatus() == STATUS) {
         ctx.pipeline().remove(this);
       } else {
-        handleHandshake(ctx, handshake.getServerAddress(), handshake.getProtocolVersion().getProtocol());
+        handleHandshake(ctx, handshake.getServerAddress(), handshake.getPort(),
+          handshake.getProtocolVersion().getProtocol());
       }
     } else if (msg instanceof ServerLoginPacket serverLogin) {
       // Deject this pipeline and let Sonar process the login packet

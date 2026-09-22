@@ -48,7 +48,7 @@ import java.net.InetAddress;
 import static xyz.jonesdev.sonar.api.antibot.ChannelPipelines.*;
 
 @Getter
-@ToString(of = {"protocolVersion", "inetAddress", "hostname", "geyser"})
+@ToString(of = {"protocolVersion", "inetAddress", "hostname", "handshakePort", "geyser"})
 public final class UserWrapper implements SonarUser {
   @Accessors(fluent = true)
   private final Channel channel;
@@ -58,6 +58,7 @@ public final class UserWrapper implements SonarUser {
   private final String username;
   private final boolean geyser;
   private final @Nullable String hostname;
+  private final int handshakePort;
   private final SystemTimer loginTimer;
   @Setter
   private boolean forceCaptcha;
@@ -68,7 +69,8 @@ public final class UserWrapper implements SonarUser {
                      final @NotNull String username,
                      final @NotNull String fingerprint,
                      final boolean geyser,
-                     final @Nullable String hostname) {
+                     final @Nullable String hostname,
+                     final int handshakePort) {
     this.channel = ctx.channel();
     this.inetAddress = inetAddress;
     this.protocolVersion = protocolVersion;
@@ -76,6 +78,7 @@ public final class UserWrapper implements SonarUser {
     this.fingerprint = fingerprint;
     this.geyser = geyser;
     this.hostname = hostname;
+    this.handshakePort = handshakePort;
     this.loginTimer = new SystemTimer();
 
     GlobalSonarStatistics.totalAttemptedVerifications++;

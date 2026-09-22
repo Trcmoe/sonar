@@ -117,7 +117,7 @@ final class BukkitInboundHandler extends InboundHandlerAdapter {
           case LOGIN:
           case TRANSFER:
             // Let the actual handler know about the handshake packet
-            handleHandshake(ctx, handshake.getHostname(), handshake.getProtocolVersionId());
+            handleHandshake(ctx, handshake.getHostname(), handshake.getPort(), handshake.getProtocolVersionId());
             // Be ready for the next packet (which is supposed to be a login packet)
             updateRegistry(SonarPacketRegistry.LOGIN, Objects.requireNonNull(protocolVersion));
             break;

@@ -48,6 +48,10 @@ public interface SonarUser {
 
   @Nullable String getHostname();
 
+  default int getHandshakePort() {
+    return -1;
+  }
+
   /**
    * Disconnect the player during/after verification
    * using our custom Disconnect packet.

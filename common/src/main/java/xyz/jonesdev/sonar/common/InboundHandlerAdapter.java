@@ -49,6 +49,7 @@ public abstract class InboundHandlerAdapter extends ChannelInboundHandlerAdapter
   protected @Nullable String username;
   protected ProtocolVersion protocolVersion;
   protected @Nullable String handshakeHostname;
+  protected int handshakePort = -1;
   protected @Nullable RemovalListener channelRemovalListener;
 
   /**
@@ -56,6 +57,7 @@ public abstract class InboundHandlerAdapter extends ChannelInboundHandlerAdapter
    */
   protected final void handleHandshake(final @NotNull ChannelHandlerContext ctx,
                                        final @NotNull String hostname,
+                                       final int port,
                                        final int protocol) throws Exception {
     // Check if the hostname is invalid
     if (hostname.isEmpty()) {
@@ -67,6 +69,7 @@ public abstract class InboundHandlerAdapter extends ChannelInboundHandlerAdapter
     }
     protocolVersion = ProtocolVersion.fromId(protocol);
     handshakeHostname = hostname;
+    handshakePort = port;
     ctx.pipeline().addFirst(SONAR_BANDWIDTH, BandwidthHandler.INSTANCE);
   }
 
@@ -169,7 +172,7 @@ public abstract class InboundHandlerAdapter extends ChannelInboundHandlerAdapter
 
       // Create an instance for the user and let the verification handler take over the channel
       return () -> new UserWrapper(ctx, inetAddress, protocolVersion, username, fingerprint, geyser,
-        handshakeHostname);
+        handshakeHostname, handshakePort);
     });
   }
 
