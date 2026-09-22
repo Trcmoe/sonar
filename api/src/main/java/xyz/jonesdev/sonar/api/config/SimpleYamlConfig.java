@@ -29,6 +29,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +63,16 @@ public final class SimpleYamlConfig {
     // I hate my life... but this works... somehow
     if (exists) {
       // First, we store all values from the current (old) config
-      final Map<String, Object> values = yaml.getValues(true);
+      final Map<String, Object> values = new HashMap<>(yaml.getValues(true));
+      // Preserve legacy transfer values when the default config moves to the fallback keys
+      final Object legacyTransferHost = values.get("verification.transfer.destination-host");
+      if (legacyTransferHost != null) {
+        values.putIfAbsent("verification.transfer.fallback-host", legacyTransferHost);
+      }
+      final Object legacyTransferPort = values.get("verification.transfer.destination-port");
+      if (legacyTransferPort != null) {
+        values.putIfAbsent("verification.transfer.fallback-port", legacyTransferPort);
+      }
       // Then, we replace the old config file with the default one
       replaceConfigFile(defaultData);
       // Re-load the configuration
@@ -85,6 +95,10 @@ public final class SimpleYamlConfig {
 
   public void set(final String path, final Object v) {
     yaml.set(path, v);
+  }
+
+  public boolean contains(final String path) {
+    return yaml.contains(path);
   }
 
   public int getInt(final String path) {
